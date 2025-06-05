@@ -226,7 +226,7 @@
                     <p class="text-slate-400">剧本</p>
                 </div>
                 <div class="p-4 border border-slate-700 rounded-lg bg-slate-800/50">
-                    <h3 class="font-medium text-lg text-blue-200">赫赫子</h3>
+                    <h3 class="font-medium text-lg text-blue-200">赫卡图</h3>
                     <p class="text-slate-400">画师</p>
                 </div>
             </div>
@@ -257,49 +257,45 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
-        // 创建八卦排列
+        // 创建先天八卦排列
         function createTrigrams() {
             const container = document.getElementById('trigram-container');
+            // 修正后的先天八卦方位（统一增加90度旋转修正）
             const trigrams = [
-                { symbol: '☰', name: '乾 Heaven', position: 'top' },
-                { symbol: '☴', name: '巽 Wind', position: 'top-right' },
-                { symbol: '☲', name: '離 Fire', position: 'right' },
-                { symbol: '☷', name: '坤 Earth', position: 'bottom' },
-                { symbol: '☶', name: '艮 Mountain', position: 'bottom-left' },
-                { symbol: '☵', name: '坎 Water', position: 'left' },
-                { symbol: '☳', name: '震 Thunder', position: 'bottom-right' },
-                { symbol: '☱', name: '兌 Lake', position: 'top-left' }
+                { symbol: '☰', name: '乾 Heaven', angle: 180, rotate: 180 },     // 南（原90+90=180）
+                { symbol: '☱', name: '兌 Lake', angle: 135, rotate: 135 },       // 东南（原45+90=135）
+                { symbol: '☲', name: '離 Fire', angle: 90, rotate: 90 },        // 东（原0+90=90） 
+                { symbol: '☳', name: '震 Thunder', angle: 45, rotate: 45 },     // 东北（原-45+90=45）
+                { symbol: '☴', name: '巽 Wind', angle: 225, rotate: 225 },      // 西南（原135+90=225）
+                { symbol: '☵', name: '坎 Water', angle: 270, rotate: 270 },     // 西（原180+90=270）
+                { symbol: '☶', name: '艮 Mountain', angle: 315, rotate: -45 },  // 西北（原-135+90=-45）
+                { symbol: '☷', name: '坤 Earth', angle: 0, rotate: 0 }          // 北（原-90+90=0）
             ];
             
             const radius = 200;
             
             trigrams.forEach((trigram, index) => {
-                const angle = (index * (360 / trigrams.length)) * (Math.PI / 180);
-                const x = Math.cos(angle) * radius;
-                const y = Math.sin(angle) * radius;
+                const angleInRadians = (trigram.angle - 90) * (Math.PI / 180);
+                const x = Math.cos(angleInRadians) * radius;
+                const y = Math.sin(angleInRadians) * radius;
                 
                 const elem = document.createElement('div');
                 elem.className = 'trigram';
                 elem.textContent = trigram.symbol;
                 elem.style.left = `calc(50% + ${x}px)`;
                 elem.style.top = `calc(50% + ${y}px)`;
-                elem.style.transform = 'translate(-50%, -50%)';
+                // 增加旋转角度并保持居中定位
+                elem.style.transform = `translate(-50%, -50%) rotate(${trigram.rotate}deg)`;
                 elem.style.animationDelay = `${index * 0.3}s`;
                 elem.setAttribute('data-name', trigram.name);
                 
                 // 添加悬停效果
                 elem.addEventListener('mouseenter', () => {
-                    elem.style.opacity = '1';
-                    elem.style.transform = 'translate(-50%, -50%) scale(1.3)';
-                    elem.style.color = 'rgba(100, 220, 255, 0.9)';
-                    elem.style.textShadow = '0 0 20px rgba(100, 220, 255, 0.8)';
+                    elem.style.transform = `translate(-50%, -50%) rotate(${trigram.rotate}deg) scale(1.3)`; // 保持旋转角度
                 });
                 
                 elem.addEventListener('mouseleave', () => {
-                    elem.style.opacity = '0.85';
-                    elem.style.transform = 'translate(-50%, -50%)';
-                    elem.style.color = 'rgba(200, 220, 255, 0.6)';
-                    elem.style.textShadow = '0 0 12px rgba(100, 200, 255, 0.5)';
+                    elem.style.transform = `translate(-50%, -50%) rotate(${trigram.rotate}deg)`; // 保持旋转角度
                 });
                 
                 container.appendChild(elem);
@@ -309,7 +305,7 @@
         // 创建漂浮卦象
         function createFloatingTrigrams() {
             const container = document.querySelector('.bagua-bg');
-            const trigramSymbols = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
+            const trigramSymbols = ['☰', '☷', '☳', '☴', '☵', '☲', '☶', '☱'];
             
             for (let i = 0; i < 16; i++) {
                 const trigram = document.createElement('div');
@@ -361,5 +357,5 @@
             setupLinks();
         });
     </script>
-</body>
-</html>
+    </body>
+    </html>
