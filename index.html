@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Title | Indie Development</title>
+    <base target="_self">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: 'rgba(15, 23, 42, 0.9)',
+                        secondary: 'rgba(30, 41, 59, 0.9)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 新版八卦背景 */
+        .bagua-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at center, #0a0e1a 0%, #02040a 100%);
+            overflow: hidden;
+        }
+        
+        /* 标准太极图设计 */
+        .taiji {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 240px;
+            height: 240px;
+            margin: -120px 0 0 -120px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #f0f9ff 50%, #0c1a32 50%);
+            box-shadow: 0 0 40px rgba(74, 222, 128, 0.3), 
+                        inset 0 0 20px rgba(255, 255, 255, 0.1);
+            animation: taiji-rotate 40s linear infinite;
+            z-index: 1;
+        }
+        
+        .taiji::before, .taiji::after {
+            content: '';
+            position: absolute;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 20px solid;
+        }
+        
+        .taiji::before {
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0c1a32;
+            border-color: #f0f9ff;
+        }
+        
+        .taiji::after {
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #f0f9ff;
+            border-color: #0c1a32;
+        }
+        
+        /* 八卦圆环容器 */
+        .trigram-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 500px;
+            height: 500px;
+            margin: -250px 0 0 -250px;
+            animation: trigram-rotate 120s linear infinite;
+            z-index: 0;
+        }
+        
+        /* 单个卦象样式 */
+        .trigram {
+            position: absolute;
+            font-size: 2.8rem;
+            color: rgba(200, 220, 255, 0.6);
+            text-shadow: 0 0 12px rgba(100, 200, 255, 0.5);
+            transition: all 1.5s ease;
+            opacity: 0.85;
+        }
+        
+        /* 漂浮卦象 */
+        .floating-trigram {
+            position: absolute;
+            font-size: 2rem;
+            color: rgba(180, 220, 255, 0.2);
+            text-shadow: 0 0 10px rgba(80, 180, 255, 0.3);
+            opacity: 0;
+            animation: float 15s infinite linear;
+        }
+        
+        /* 动画定义 */
+        @keyframes taiji-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        @keyframes trigram-rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(-360deg); }
+        }
+        
+        @keyframes float {
+            0% { 
+                opacity: 0; 
+                transform: translateY(0) rotate(0deg);
+            }
+            10% { opacity: 0.4; }
+            50% { 
+                opacity: 0.25; 
+                transform: translateY(-100px) rotate(180deg);
+            }
+            90% { opacity: 0.1; }
+            100% { 
+                opacity: 0; 
+                transform: translateY(-200px) rotate(360deg);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.6; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.1); }
+        }
+        
+        /* 内容卡片样式 */
+        .content-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.9));
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(100, 180, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 5, 15, 0.5);
+        }
+        
+        .platform-btn {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(100, 180, 255, 0.3);
+            box-shadow: 0 4px 6px rgba(0, 10, 30, 0.3);
+        }
+        
+        .platform-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(0, 20, 60, 0.4);
+        }
+        
+        /* 标题发光效果 */
+        .glow-text {
+            text-shadow: 0 0 10px rgba(100, 200, 255, 0.7);
+        }
+        
+        .section-divider {
+            border-bottom: 1px solid rgba(100, 180, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 font-sans antialiased">
+    <!-- 新版八卦背景 -->
+    <div class="bagua-bg">
+        <div class="taiji"></div>
+        <div class="trigram-ring" id="trigram-container"></div>
+    </div>
+    
+    <!-- 主内容区 -->
+    <div class="container mx-auto px-4 py-16 max-w-4xl">
+        <!-- 游戏标题 -->
+        <header class="text-center mb-16">
+            <h1 class="text-4xl md:text-5xl font-bold mb-3 glow-text">Under construction</h1>
+            <p class="text-lg text-slate-300 max-w-2xl mx-auto">Visual Novel + Simulation</p>
+        </header>
+        
+        <!-- 游戏介绍 -->
+        <section class="content-card rounded-xl p-8 mb-12">
+            <h2 class="text-2xl font-semibold mb-6 pb-2 section-divider">About The Game</h2>
+            <p class="mb-4 text-slate-300 leading-relaxed">
+                Unnamed 是由一个小团队开发的文字冒险恋爱游戏（视觉小说），目前正在努力开发Demo
+            </p>
+            <p class="text-slate-300 leading-relaxed">
+                故事围绕着主角"乾柚"，被师傅赶下了山，身上带着行李是师傅留给他的三个铜钱和一面八卦镜，在山下乾柚一边努力经营师傅交给他的中医馆，一边邂逅了文静少女坤芜......
+            </p>
+            
+            <div class="flex flex-wrap justify-center gap-4 mt-8">
+                <a href="#" class="platform-btn bg-[#1b2838] hover:bg-[#2a4365] px-5 py-2.5 rounded-lg font-medium flex items-center" id="steam-btn">
+                    <i class="fab fa-steam mr-2"></i> Steam
+                </a>
+                <!-- <a href="#" class="platform-btn bg-[#ff2d51] hover:bg-[#ff4d6d] px-5 py-2.5 rounded-lg font-medium flex items-center" id="taptap-btn">
+                    <i class="fas fa-mobile-alt mr-2"></i> TapTap
+                </a> -->
+                <a href="#" class="platform-btn bg-slate-700 hover:bg-slate-600 px-5 py-2.5 rounded-lg font-medium flex items-center" id="demo-btn">
+                    <i class="fas fa-download mr-2"></i> Play Demo
+                </a>
+            </div>
+        </section>
+        
+        <!-- 开发进度 -->
+        <section class="content-card rounded-xl p-8 mb-12">
+            <h2 class="text-2xl font-semibold mb-6 pb-2 section-divider">Development Timeline</h2>
+            <div class="space-y-3 text-slate-300">
+                <p><span class="font-medium text-blue-300">Q1 2025/5/29</span>项目初立</p>
+                <p><span class="font-medium text-blue-300">Q2 2025/6/5:</span>开始开发</p>
+            </div>
+        </section>
+        
+        <!-- 开发团队 -->
+        <section class="content-card rounded-xl p-8 mb-12">
+            <h2 class="text-2xl font-semibold mb-6 pb-2 section-divider">Development Team</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="p-4 border border-slate-700 rounded-lg bg-slate-800/50">
+                    <h3 class="font-medium text-lg text-blue-200">Nana</h3>
+                    <p class="text-slate-400">程序/音乐/策划</p>
+                </div>
+                <div class="p-4 border border-slate-700 rounded-lg bg-slate-800/50">
+                    <h3 class="font-medium text-lg text-blue-200">乾内甲子外壬午</h3>
+                    <p class="text-slate-400">剧本</p>
+                </div>
+                <div class="p-4 border border-slate-700 rounded-lg bg-slate-800/50">
+                    <h3 class="font-medium text-lg text-blue-200">赫赫子</h3>
+                    <p class="text-slate-400">画师</p>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 联系信息 -->
+        <section class="content-card rounded-xl p-8">
+            <h2 class="text-2xl font-semibold mb-6 pb-2 section-divider">Contact</h2>
+            <div class="flex flex-col items-center space-y-4">
+                <a href="mailto:contact@mysticrealms.com" class="flex items-center text-slate-300 hover:text-blue-300 transition-colors" id="email-link">
+                    <i class="fas fa-envelope mr-3 text-lg"></i>
+                    <span>contact@owofile@qq.com</span>
+                </a>
+                <div class="flex space-x-4 mt-4">
+                    <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-blue-600 transition-colors">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-indigo-600 transition-colors">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="#" class="w-10 h-10 flex items-center justify-center rounded-full bg-slate-800 hover:bg-red-500 transition-colors">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script>
+        // 创建八卦排列
+        function createTrigrams() {
+            const container = document.getElementById('trigram-container');
+            const trigrams = [
+                { symbol: '☰', name: '乾 Heaven', position: 'top' },
+                { symbol: '☴', name: '巽 Wind', position: 'top-right' },
+                { symbol: '☲', name: '離 Fire', position: 'right' },
+                { symbol: '☷', name: '坤 Earth', position: 'bottom' },
+                { symbol: '☶', name: '艮 Mountain', position: 'bottom-left' },
+                { symbol: '☵', name: '坎 Water', position: 'left' },
+                { symbol: '☳', name: '震 Thunder', position: 'bottom-right' },
+                { symbol: '☱', name: '兌 Lake', position: 'top-left' }
+            ];
+            
+            const radius = 200;
+            
+            trigrams.forEach((trigram, index) => {
+                const angle = (index * (360 / trigrams.length)) * (Math.PI / 180);
+                const x = Math.cos(angle) * radius;
+                const y = Math.sin(angle) * radius;
+                
+                const elem = document.createElement('div');
+                elem.className = 'trigram';
+                elem.textContent = trigram.symbol;
+                elem.style.left = `calc(50% + ${x}px)`;
+                elem.style.top = `calc(50% + ${y}px)`;
+                elem.style.transform = 'translate(-50%, -50%)';
+                elem.style.animationDelay = `${index * 0.3}s`;
+                elem.setAttribute('data-name', trigram.name);
+                
+                // 添加悬停效果
+                elem.addEventListener('mouseenter', () => {
+                    elem.style.opacity = '1';
+                    elem.style.transform = 'translate(-50%, -50%) scale(1.3)';
+                    elem.style.color = 'rgba(100, 220, 255, 0.9)';
+                    elem.style.textShadow = '0 0 20px rgba(100, 220, 255, 0.8)';
+                });
+                
+                elem.addEventListener('mouseleave', () => {
+                    elem.style.opacity = '0.85';
+                    elem.style.transform = 'translate(-50%, -50%)';
+                    elem.style.color = 'rgba(200, 220, 255, 0.6)';
+                    elem.style.textShadow = '0 0 12px rgba(100, 200, 255, 0.5)';
+                });
+                
+                container.appendChild(elem);
+            });
+        }
+        
+        // 创建漂浮卦象
+        function createFloatingTrigrams() {
+            const container = document.querySelector('.bagua-bg');
+            const trigramSymbols = ['☰', '☱', '☲', '☳', '☴', '☵', '☶', '☷'];
+            
+            for (let i = 0; i < 16; i++) {
+                const trigram = document.createElement('div');
+                trigram.className = 'floating-trigram';
+                trigram.textContent = trigramSymbols[Math.floor(Math.random() * trigramSymbols.length)];
+                trigram.style.left = `${Math.random() * 100}%`;
+                trigram.style.top = `${Math.random() * 100}%`;
+                trigram.style.fontSize = `${1 + Math.random() * 2}rem`;
+                trigram.style.animationDelay = `${Math.random() * 15}s`;
+                trigram.style.animationDuration = `${10 + Math.random() * 20}s`;
+                
+                container.appendChild(trigram);
+            }
+        }
+        
+        // 处理链接点击
+        function setupLinks() {
+            document.querySelectorAll('a[id]').forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const id = e.currentTarget.id;
+                    
+                    if (id === 'email-link') {
+                        window.location.href = 'mailto:contact@mysticrealms.com';
+                    } else {
+                        const platform = id.replace('-btn', '');
+                        const platformNames = {
+                            'steam': 'Steam',
+                            'taptap': 'TapTap',
+                            'demo': 'Demo'
+                        };
+                        
+                        // 添加视觉反馈
+                        e.currentTarget.classList.add('animate-pulse');
+                        setTimeout(() => {
+                            e.currentTarget.classList.remove('animate-pulse');
+                            alert(`Redirecting to ${platformNames[platform]} page...`);
+                            // 实际应用中应使用: window.location.href = 'your-link-here';
+                        }, 300);
+                    }
+                });
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            createTrigrams();
+            createFloatingTrigrams();
+            setupLinks();
+        });
+    </script>
+</body>
+</html>
