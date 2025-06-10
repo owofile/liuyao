@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Storyline</title>
+    <base target="_self">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@preline/preline@2.0.0/dist/preline.min.js"></script>
+    <style>
+        :root {
+            --primary: #2563eb;  /* More vibrant blue */
+            --secondary: #059669; /* Deeper green */
+            --accent: #d97706;   /* Warmer orange */
+            --background: #f8fafc;
+            --text: #1e293b;
+            --progress-bg: #e2e8f0;
+            --node-bg: #ffffff;
+            --branch-bg: #f1f5f9;
+        }
+        
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --primary: #3b82f6;
+                --secondary: #10b981;
+                --accent: #f59e0b;
+                --background: #0f172a;
+                --text: #e2e8f0;
+                --progress-bg: #334155;
+                --node-bg: #1e293b;
+                --branch-bg: #1e293b;
+            }
+        }
+        
+        .timeline {
+            position: relative;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 0;
+        }
+        
+        .timeline::after {
+            content: '';
+            position: absolute;
+            width: 4px;
+            background-color: var(--primary);
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            opacity: 0.7;
+        }
+        
+        .branch-line {
+            position: absolute;
+            width: 22%;
+            height: 2px;
+            background-color: var(--primary);
+            top: 50%;
+            border-style: dashed;
+            opacity: 0.6;
+        }
+        
+        .branch-line.left {
+            left: 3%;
+        }
+        
+        .branch-line.right {
+            right: 3%;
+        }
+        
+        .node {
+            position: relative;
+            width: 100%;
+            padding: 30px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .node:hover {
+            transform: scale(1.05);
+        }
+        
+        .node-content {
+            position: relative;
+            width: 42%;
+            padding: 25px;
+            border-radius: 12px;
+            background-color: var(--node-bg);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .node.left {
+            left: 0;
+        }
+        
+        .node.right {
+            left: 58%;
+        }
+        
+        .node::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background-color: var(--primary);
+            border: 4px solid var(--background);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        
+        .node.left::after {
+            right: -12px;
+        }
+        
+        .node.right::after {
+            left: -12px;
+        }
+        
+        .branch-node {
+            position: absolute;
+            width: 26%;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: var(--branch-bg);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            color: var(--text);
+            top: 50%;
+            transform: translateY(-50%);
+            transition: all 0.3s ease;
+            border: 1px solid rgba(0,0,0,0.05);
+            cursor: move; /* 添加可拖动光标 */
+            user-select: none; /* 防止文字被选中 */
+            touch-action: none; /* 禁用触摸默认行为 */
+        }
+        
+        .branch-node:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+        
+        .branch-node.left {
+            left: 4%;
+        }
+        
+        .branch-node.right {
+            right: 4%;
+        }
+        
+        .branch-node::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background-color: var(--secondary);
+            border: 3px solid var(--background);
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+        }
+        
+        .branch-node.left::after {
+            right: -9px;
+        }
+        
+        .branch-node.right::after {
+            left: -9px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background-color: var(--progress-bg);
+            margin: 15px 0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            border-radius: 3px;
+            background: linear-gradient(90deg, var(--accent), #f59e0b);
+            width: 0;
+            transition: width 1s ease;
+        }
+        
+        .animate-in {
+            animation: fadeIn 0.6s ease forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Better spacing for branch nodes */
+        .branch-container {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+        }
+        
+        /* Highlight current target */
+        .current-target {
+            background-color: rgba(217, 119, 6, 0.15);
+            border: 2px solid var(--accent) !important;
+            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.2);
+        }
+        
+        @media screen and (max-width: 768px) {
+            .timeline::after {
+                left: 31px;
+            }
+            
+            .node {
+                width: 100%;
+                padding-left: 70px;
+                padding-right: 25px;
+                padding-top: 40px;
+                padding-bottom: 40px;
+            }
+            
+            .node.left, .node.right {
+                left: 0;
+            }
+            
+            .node::after {
+                left: 19px;
+            }
+            
+            .node.left::after, .node.right::after {
+                left: 19px;
+            }
+            
+            .node-content {
+                width: 100%;
+            }
+            
+            .branch-line {
+                display: none;
+            }
+            
+            .branch-container {
+                position: relative;
+                height: auto;
+                margin-top: 20px;
+            }
+            
+            .branch-node {
+                position: relative;
+                width: 100%;
+                left: 0 !important;
+                right: auto !important;
+                margin: 15px 0 15px 70px;
+                transform: none !important;
+                top: auto !important;
+            }
+            
+            .branch-node::after {
+                left: -9px !important;
+                right: auto !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-[var(--background)] text-[var(--text)] min-h-screen p-4 transition-colors duration-300">
+    <div class="container mx-auto relative">
+        <!-- Back button -->
+        <button id="backButton" class="fixed top-4 left-4 z-50 bg-[var(--primary)] text-white p-3 rounded-full shadow-lg hover:bg-[var(--primary)]/90 transition-colors flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </button>
+
+        <div class="timeline">
+            <!-- Main Storyline -->
+            <div class="node left animate-in" style="animation-delay: 0.1s">
+                <div class="node-content">
+                    <h3 class="text-lg font-bold text-[var(--primary)]">Chapter 1</h3>
+                    <h2 class="text-2xl font-bold mb-3">乾柚被师傅赶下山</h2>
+                    <p class="text-[var(--text)]/90">主角乾柚因违反师门规矩，被师傅逐出山门，开始独自闯荡江湖。</p>
+                    <div class="progress-bar mt-4">
+                        <div class="progress" style="width: 100%"></div>
+                    </div>
+                    <div class="text-sm text-right mt-2 text-[var(--primary)]">Completed</div>
+                </div>
+            </div>
+
+            <div class="node right animate-in" style="animation-delay: 0.3s">
+                <div class="node-content">
+                    <h3 class="text-lg font-bold text-[var(--primary)]">Chapter 2</h3>
+                    <h2 class="text-2xl font-bold mb-3">遇到坤芜</h2>
+                    <p class="text-[var(--text)]/90">在流浪途中，乾柚遇到了神秘的坤芜，两人结伴同行。</p>
+                    <div class="progress-bar mt-4">
+                        <div class="progress" style="width: 100%"></div>
+                    </div>
+                    <div class="text-sm text-right mt-2 text-[var(--primary)]">Completed</div>
+                </div>
+            </div>
+
+            <div class="node left animate-in" style="animation-delay: 0.5s">
+                <div class="node-content">
+                    <h3 class="text-lg font-bold text-[var(--primary)]">Chapter 3</h3>
+                    <h2 class="text-2xl font-bold mb-3">接受中医馆</h2>
+                    <p class="text-[var(--text)]/90">两人接手了一家破旧的中医馆，开始了他们的经营之旅。</p>
+                    <div class="progress-bar mt-4">
+                        <div class="progress" style="width: 100%"></div>
+                    </div>
+                    <div class="text-sm text-right mt-2 text-[var(--primary)]">Completed</div>
+                </div>
+                
+                <!-- Branch Lines -->
+                <div class="branch-line left"></div>
+                <div class="branch-line right"></div>
+                
+                <!-- Branch Nodes Container -->
+                <div class="branch-container">
+                    <!-- Top Branch Node -->
+                    <div class="branch-node left animate-in" style="animation-delay: 0.7s; top: 30%">
+                        <h4 class="font-semibold text-[var(--secondary)] mb-1">分支任务</h4>
+                        <h3 class="text-xl font-bold mb-2">药材种植</h3>
+                        <p class="text-[var(--text)]/90">建立自己的药材种植园，保证药源供应。</p>
+                        <div class="progress-bar mt-3">
+                            <div class="progress" style="width: 30%"></div>
+                        </div>
+                        <div class="text-sm text-right mt-2 text-[var(--secondary)]">30% Complete</div>
+                    </div>
+                    
+                    <!-- Middle Branch Node (Current Target) -->
+                    <div class="branch-node left animate-in current-target" style="animation-delay: 0.9s; top: 50%">
+                        <h4 class="font-semibold text-[var(--accent)] mb-1">当前目标</h4>
+                        <h3 class="text-xl font-bold mb-2">疑难杂症研究</h3>
+                        <p class="text-[var(--text)]/90">研究特殊病例，开发新的治疗方案。</p>
+                        <div class="progress-bar mt-3">
+                            <div class="progress" style="width: 65%"></div>
+                        </div>
+                        <div class="text-sm text-right mt-2 text-[var(--accent)]">65% Complete</div>
+                    </div>
+                    
+                    <!-- Bottom Branch Node -->
+                    <div class="branch-node right animate-in" style="animation-delay: 1.1s; top: 70%">
+                        <h4 class="font-semibold text-[var(--secondary)] mb-1">分支任务</h4>
+                        <h3 class="text-xl font-bold mb-2">名医坐诊</h3>
+                        <p class="text-[var(--text)]/90">邀请知名医师来馆坐诊，提升医馆声誉。</p>
+                        <div class="progress-bar mt-3">
+                            <div class="progress" style="width: 10%"></div>
+                        </div>
+                        <div class="text-sm text-right mt-2 text-[var(--secondary)]">10% Complete</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 修改返回按钮逻辑为直接跳转
+            document.getElementById('backButton').addEventListener('click', function(e) {
+                e.preventDefault();
+                window.location.href = 'index.html';  // 删除原来的alert提示
+            });
+            
+            // Animate progress bars
+            setTimeout(() => {
+                document.querySelectorAll('.progress').forEach(bar => {
+                    const targetWidth = bar.style.width;
+                    bar.style.width = '0';
+                    setTimeout(() => {
+                        bar.style.width = targetWidth;
+                    }, 100);
+                });
+            }, 500);
+            
+            // Animate nodes sequentially
+            const nodes = document.querySelectorAll('.animate-in');
+            nodes.forEach((node, index) => {
+                node.style.animationDelay = `${index * 0.2 + 0.1}s`;
+            });
+            
+            // 新增拖拽功能
+            let draggedNode = null;
+            let initialY = 0;
+            
+            document.querySelectorAll('.branch-node').forEach(node => {
+                node.draggable = true;
+                
+                node.addEventListener('dragstart', function(e) {
+                    draggedNode = this;
+                    initialY = e.clientY - this.getBoundingClientRect().top;
+                    this.style.opacity = '0.7';
+                    this.dataset.originalTop = this.style.top; // 存储原始位置
+                });
+
+                node.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    if (draggedNode && draggedNode !== this) {
+                        const rect = this.getBoundingClientRect();
+                        const newY = e.clientY - rect.top - initialY;
+                        draggedNode.style.top = `${Math.min(Math.max(newY/rect.height*100, 10), 90)}%`;
+                    }
+                });
+
+                node.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    if (draggedNode) {
+                        draggedNode.style.opacity = '1';
+                        // 更新节点位置存储（可选）
+                        draggedNode.dataset.originalTop = draggedNode.style.top;
+                        draggedNode = null;
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
