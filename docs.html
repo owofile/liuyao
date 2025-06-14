@@ -129,6 +129,75 @@ func _handle_command(command: Dictionary):
         </ol>
     </section>
 
+    <section class="section">
+        <h2 class="text-2xl font-semibold mb-4">自定义函数队列功能</h2>
+        <div class="space-y-4">
+            <p>系统新增了自定义函数队列机制，允许在对话序列中插入游戏逻辑函数调用。</p>
+            
+            <h3 class="text-xl font-semibold">基本用法</h3>
+            <div class="code-block">
+                <pre><code class="cmd-example"># 在对话序列中插入自定义函数
+VisualNovelSystem.queue_custom_function(
+    func(): day_2_logic()  # 匿名函数封装方法调用
+)</code></pre>
+            </div>
+            
+            <h3 class="text-xl font-semibold">完整示例</h3>
+            <div class="code-block">
+                <pre><code># GameLogic.gd 示例
+class_name GameLogic
+extends Node
+
+func day_2_logic():
+    print("执行第二天的逻辑")
+    # 这里可以有复杂的游戏逻辑
+    
+func start_sequence():
+    # 启动对话序列
+    VisualNovelSystem.start_full_system("res://Data/text/day1_intro.json")
+    
+    # 添加自定义逻辑到队列
+    VisualNovelSystem.queue_custom_function(
+        func(): day_2_logic()
+    )
+    
+    # 添加更多对话
+    VisualNovelSystem.start_empty_system("res://Data/text/day1_end.json")
+    
+    # 添加完成回调
+    VisualNovelSystem.add_completion_callback(
+        func(): print("所有任务完成！")
+    )</code></pre>
+            </div>
+            
+            <h3 class="text-xl font-semibold">带参数的方法调用</h3>
+            <div class="code-block">
+                <pre><code># 带参数的方法
+func activate_character(character_name: String, location: Vector2):
+    print("激活角色: ", character_name, " 在位置: ", location)
+
+# 在队列中添加的两种方式
+VisualNovelSystem.queue_custom_function(
+    func(): activate_character("Alice", Vector2(100, 200))
+)
+
+# 或者使用参数数组形式
+VisualNovelSystem.queue_custom_function(
+    activate_character,
+    ["Alice", Vector2(100, 200)]
+)</code></pre>
+            </div>
+            
+            <h3 class="text-xl font-semibold">注意事项</h3>
+            <ul class="list-disc pl-6 space-y-2">
+                <li>确保调用时包含方法的对象仍然存在</li>
+                <li>系统已内置错误检查，无效调用会输出错误但不会崩溃</li>
+                <li>跨场景调用需注意对象生命周期</li>
+                <li>方法会在队列中按顺序执行</li>
+            </ul>
+        </div>
+    </section>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
     <script>
         // 图片放大功能
